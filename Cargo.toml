@@ -2,13 +2,18 @@
 name = "keimet"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 crossterm = "0.25.0"
+rust-i18n = "1.0.1"
 
 [dependencies.cursive]
 version = "0.20.0"
 default-features = false
 features = ["crossterm-backend"]
+
+[build-dependencies]
+copy_to_output = "2.1.0"
