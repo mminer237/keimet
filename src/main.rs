@@ -25,9 +25,17 @@ fn main() {
 
     (move |bible, siv: Rc<RefCell<CursiveRunnable>>| {
         let mut book_view = siv.borrow_mut().find_name::<SelectView<String>>("book_view").unwrap();
-        (*book_view).set_on_select(move |s, book_name| {
-            rebuild_chapter_selector(s, Rc::clone(&bible), book_name.to_string());
-            // rebuild_verse_selector(siv, Rc::clone(&bible), book_name.to_string());
+        (|bible| {
+            (*book_view).set_on_select(move |s, book_name| {
+                rebuild_chapter_selector(s, Rc::clone(&bible), book_name.to_string());
+                let chapter_number = s.find_name::<SelectView<String>>("chapter_view").unwrap().selected_id().unwrap();
+                rebuild_verse_selector(s, Rc::clone(&bible), book_name.to_string(), chapter_number);
+            });
+        })(Rc::clone(&bible));
+        let mut chapter_view = siv.borrow_mut().find_name::<SelectView<String>>("chapter_view").unwrap();
+        (*chapter_view).set_on_select(move |s, chapter| {
+            let book_name = s.find_name::<SelectView<String>>("book_view").unwrap().selection().unwrap().to_string();
+            rebuild_verse_selector(s, Rc::clone(&bible), book_name, chapter.parse::<usize>().unwrap() - 1);
         });
     })(Rc::clone(&bible), Rc::clone(&siv));
 
@@ -75,4 +83,12 @@ fn build_verse_selector<'a>(bible: Rc<Bible>, book_view: &SelectView, chapter_vi
     let chapter_number = chapter_view.selection().unwrap().to_string().parse::<usize>().unwrap();
     verse_view.add_all_str(bible.books[book_number].chapters[chapter_number].verses.iter().map(|x| x.number.to_string()));
     return verse_view;
+}
+
+fn rebuild_verse_selector<'a>(siv: &mut Cursive, bible: Rc<Bible>, book_name: String, chapter_number: usize) {
+    let mut verse_view = siv.find_name::<SelectView<String>>("verse_view").unwrap();
+    verse_view.clear();
+    let book_number = (&bible.books).into_iter().position(|x| x.name == book_name).unwrap();
+    verse_view.add_all_str(bible.books[book_number].chapters[chapter_number].verses.iter().map(|x| x.number.to_string()));
+    verse_view.set_selection(0);
 }
