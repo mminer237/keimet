@@ -2,7 +2,7 @@ mod bible;
 
 use bible::Bible;
 use cursive::{CursiveRunnable, Cursive};
-use cursive::views::{LinearLayout, NamedView, SelectView, ScrollView, TextView};
+use cursive::views::{LinearLayout, NamedView, SelectView, ScrollView, TextView, ResizedView};
 use rust_i18n::t;
 rust_i18n::i18n!("locales");
 use std::cell::RefCell;
@@ -56,8 +56,8 @@ fn build_selector(bible: Rc<Bible>) -> LinearLayout {
     let mut named_verse_view = NamedView::new("verse_view", verse_view);
     return LinearLayout::horizontal()
         .child(ScrollView::new(named_book_view))
-        .child(ScrollView::new(named_chapter_view))
-        .child(ScrollView::new(named_verse_view));
+        .child(ResizedView::with_min_width(5, ScrollView::new(ResizedView::with_max_width(3, named_chapter_view))))
+        .child(ResizedView::with_min_width(5, ScrollView::new(ResizedView::with_max_width(3, named_verse_view))));
 }
 
 fn get_book_name(book_view: &SelectView) -> String { book_view.selection().unwrap().to_string() }
