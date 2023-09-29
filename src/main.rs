@@ -1,7 +1,7 @@
 mod bible;
 
 use bible::Bible;
-use cursive::CursiveRunnable;
+use cursive::{CursiveRunnable, Cursive};
 use cursive::views::{LinearLayout, NamedView, SelectView, ScrollView, TextView};
 use rust_i18n::t;
 rust_i18n::i18n!("locales");
@@ -26,7 +26,7 @@ fn main() {
     (move |bible, siv: Rc<RefCell<CursiveRunnable>>| {
         let mut book_view = siv.borrow_mut().find_name::<SelectView<String>>("book_view").unwrap();
         (*book_view).set_on_select(move |s, book_name| {
-            rebuild_chapter_selector(Rc::clone(&siv), Rc::clone(&bible), book_name.to_string());
+            rebuild_chapter_selector(s, Rc::clone(&bible), book_name.to_string());
             // rebuild_verse_selector(siv, Rc::clone(&bible), book_name.to_string());
         });
     })(Rc::clone(&bible), Rc::clone(&siv));
@@ -60,8 +60,8 @@ fn build_chapter_selector<'a>(bible: Rc<Bible>, book_name: String) -> SelectView
     return chapter_view;
 }
 
-fn rebuild_chapter_selector<'a>(siv: Rc<RefCell<CursiveRunnable>>, bible: Rc<Bible>, book_name: String) {
-    let mut chapter_view = siv.borrow_mut().find_name::<SelectView<String>>("chapter_view").unwrap();
+fn rebuild_chapter_selector<'a>(siv: &mut Cursive, bible: Rc<Bible>, book_name: String) {
+    let mut chapter_view = siv.find_name::<SelectView<String>>("chapter_view").unwrap();
     chapter_view.clear();
     let book_number = (&bible.books).into_iter().position(|x| x.name == book_name).unwrap();
     chapter_view.add_all_str(bible.books[book_number].chapters.iter().map(|x| x.number.to_string()));
